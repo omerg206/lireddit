@@ -2,7 +2,7 @@ import { ApolloServer } from 'apollo-server-express';
 import { buildSchema } from 'type-graphql';
 import { UserResolver } from './resolvers/user';
 import { PostResolver } from './resolvers/post';
-import { __prod__ } from './constants';
+import { COOKIE_NAME, __prod__ } from './constants';
 import { MikroORM } from '@mikro-orm/core';
 import microConfig from './mikro-orm.config';
 import express from 'express';
@@ -12,7 +12,7 @@ import redis from 'redis';
 import session from 'express-session';
 import connectRedis from 'connect-redis';
 import { MyContext } from './types';
-
+import cors from 'cors';
 
 
 
@@ -28,9 +28,14 @@ const main = async () => {
         // host: '172.19.43.120',
     })
 
+    app.use(cors({
+        credentials: true,
+        origin: 'http://localhost:3000'
+    }));
+
     app.use(
         session({
-            name: 'qid',
+            name: COOKIE_NAME,
             store: new RedisStore({ client: redisClient, disableTouch: true }),
             secret: '213asds23s',
             resave: false,
@@ -53,7 +58,7 @@ const main = async () => {
         context: ({ req, res }: MyContext) => ({ em: orm.em, req, res })
     });
 
-    apolloServer.applyMiddleware({ app })
+    apolloServer.applyMiddleware({ app, cors: false })
 
 
 

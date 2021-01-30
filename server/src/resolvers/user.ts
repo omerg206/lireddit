@@ -1,4 +1,5 @@
-import { MyContext } from './../types';
+import { COOKIE_NAME } from './../constants';
+import { MyContext } from '../types';
 import { Arg, Ctx, Field, InputType, Mutation, ObjectType, Query, Resolver } from "type-graphql";
 import agron2, { argon2d } from 'argon2';
 import { User } from '../entities/user';
@@ -77,6 +78,7 @@ export class UserResolver {
             await em.persistAndFlush(user);
 
         } catch (e) {
+            console.log(e);
             if (e.code === '23505') {
                 return {
                     errors: [{
@@ -126,5 +128,21 @@ export class UserResolver {
     }
 
 
+    @Mutation(() => Boolean)
+    async logout(
+        @Ctx() { req, res }: MyContext) {
+        return new Promise((resolve) => {
+            req.session.destroy(err => {
+                if (err) {
+                    console.log(err);
+                    return resolve(false);
+                }
+
+                res.clearCookie(COOKIE_NAME);
+                return resolve(true);
+            })
+
+        })
+    }
 
 }

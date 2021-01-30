@@ -5,9 +5,10 @@
     "lib": [
       "dom",
       "es6",
-      "es2017"
+      "es2017",
+      "esnext.AsyncIterable"
     ],
-    "sourceMap": true,
+    "skipLibCheck": true,
     "outDir": "./dist",
     "moduleResolution": "node",
     "removeComments": true,
