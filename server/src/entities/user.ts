@@ -11,6 +11,9 @@ export class User {
   @PrimaryKey()
   id!: number;
 
+
+
+
   @Field(() => String)
   @Property({ type: "date" })
   createdAt = new Date();
@@ -23,9 +26,13 @@ export class User {
   @Property({ type: 'text', unique: true })
   username!: string;
 
+
+
   @Property({ type: 'text' })
   password!: string;
 
-
+  @Field()
+  @Property({ type: 'text', unique: true })
+  email!: string;
 
 }
