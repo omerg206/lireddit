@@ -8,12 +8,11 @@ import microConfig from './mikro-orm.config';
 import express from 'express';
 import { HelloResolver } from './resolvers/hello';
 import 'reflect-metadata';
-import redis from 'redis';
+import Redis from 'ioredis';
 import session from 'express-session';
 import connectRedis from 'connect-redis';
 import { MyContext } from './types';
 import cors from 'cors';
-import { User } from './entities/user';
 
 
 
@@ -25,7 +24,7 @@ const main = async () => {
     const app = express();
 
     let RedisStore = connectRedis(session,)
-    let redisClient = redis.createClient({
+    let redisClient = new Redis({
         // host: '172.19.43.120',
     })
 
@@ -56,7 +55,7 @@ const main = async () => {
             resolvers: [HelloResolver, PostResolver, UserResolver],
             validate: false
         }),
-        context: ({ req, res }: MyContext) => ({ em: orm.em, req, res })
+        context: ({ req, res }: MyContext) => ({ em: orm.em, req, res, redis: redisClient })
     });
 
     apolloServer.applyMiddleware({ app, cors: false })

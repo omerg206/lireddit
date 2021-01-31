@@ -1,5 +1,5 @@
 import { validateRegister } from './../uitls/validate-register';
-import { COOKIE_NAME } from './../constants';
+import { COOKIE_NAME, FORGOT_PASSWORD_PREFIX } from './../constants';
 import { MyContext } from '../types';
 import { Arg, Ctx, Field, Mutation, ObjectType, Query, Resolver } from "type-graphql";
 import agron2, { argon2d } from 'argon2';
@@ -7,7 +7,8 @@ import { User } from '../entities/user';
 import e from 'express';
 import { UsernamePasswordInput } from './UsernamePasswordInput';
 import { EntityManager } from '@mikro-orm/postgresql';
-
+import { sendEmail } from '../uitls/send-email';
+import { v4 } from 'uuid'
 @ObjectType()
 class UserResponse {
     @Field(() => [FieldError], { nullable: true })
@@ -29,6 +30,52 @@ class FieldError {
 
 @Resolver()
 export class UserResolver {
+    @Mutation(() => UserResponse)
+    async changePassword(
+        @Arg("token") token: string,
+        @Arg("newPassword") newPassword: string,
+        @Ctx() { req, redis, em }: MyContext
+    ): Promise<UserResponse> {
+        if (newPassword.length <= 2) {
+            return {
+                errors: [{
+                    field: 'newPassword',
+                    message: 'length must be grater than2'
+                }]
+            }
+        }
+
+        const userId = await redis.get(FORGOT_PASSWORD_PREFIX + token);
+
+        if (!userId) {
+            return {
+                errors: [{
+                    field: 'newPassword',
+                    message: 'token expired'
+                }]
+            }
+        }
+
+        const user = await em.findOne(User, { id: parseInt(userId) });
+
+        if (!user) {
+            return {
+                errors: [{
+                    field: 'token',
+                    message: 'user no longer exits'
+                }]
+            }
+        }
+
+        user.password = await agron2.hash(newPassword);
+
+        req.session.userId = user.id;
+        return { user };
+
+    }
+
+
+
     @Query(() => User, { nullable: true })
     async me(@Ctx() { req, em }: MyContext) {
         let res = null;
@@ -43,9 +90,18 @@ export class UserResolver {
     @Mutation(() => Boolean)
     async forgotPassword(
         @Arg("email") email: string,
-        @Ctx() { em }: MyContext
+        @Ctx() { em, redis }: MyContext
     ) {
-        const user = await em.findOne(User, { username: email });
+        const user = await em.findOne(User, { email });
+        if (!user) {
+            return true
+        }
+
+        const token = v4();
+        await redis.set(FORGOT_PASSWORD_PREFIX + token, user.id, 'ex', 1000 * 60 * 60 * 24 * 3)
+
+        await sendEmail(email,
+            `<a href="http://localhost:3000/change-password/${token}"> reset password</a>`)
         return true;
     }
 
