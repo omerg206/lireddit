@@ -1,7 +1,6 @@
-import { Box, Button } from "@chakra-ui/react";
+import { Box, Button, Flex, Link } from "@chakra-ui/react";
 import { Formik, Form } from "formik";
 import { NextPage } from "next";
-import router from "next/dist/next-server/lib/router/router";
 import { useRouter } from "next/router";
 import React, { useState } from "react";
 import InputField from "../../components/inputField";
@@ -10,6 +9,7 @@ import { toErrorMap } from "../../utils/to-error-map";
 import { Wrapper } from "../../wrapper";
 import { withUrqlClient } from "next-urql";
 import { createUrqlClient } from "../../utils/create-urql-cleint";
+import NextLink from "next/link";
 
 interface TokenProps {}
 
@@ -26,18 +26,18 @@ export const ChangePassword: NextPage<{ token: string }> = ({ token }) => {
             token,
             newPassword: values.newPassword,
           });
-          const router = useRouter();
 
           if (response.data?.changePassword.errors) {
             const errorMap = toErrorMap(response.data.changePassword.errors);
-            if ("token" in errorMap) {
-              setTokenError(errorMap.token);
+            if (errorMap["newPassword"].includes("token")) {
+              setTokenError(errorMap["newPassword"]);
+            } else {
+              setErrors(errorMap);
             }
-
-            setErrors(errorMap);
           } else if (response.data?.changePassword.user) {
-            setTokenError("");
-            router.push("/");
+            // setTokenError("");
+            // const router = useRouter();
+            // router.push("/");
           }
         }}
       >
@@ -49,7 +49,16 @@ export const ChangePassword: NextPage<{ token: string }> = ({ token }) => {
               label="New Password"
               type="password"
             />
-            {tokenError && <Box color="red">{tokenError} </Box>}
+            {tokenError ? (
+              <Flex>
+                <Box mr={2} color="red" style={{ color: "red" }}>
+                  {tokenError}
+                </Box>
+                <NextLink href="/forgot-password">
+                  <Link> get a new one</Link>
+                </NextLink>
+              </Flex>
+            ) : null}
             <Button
               mt={4}
               type="submit"
@@ -71,4 +80,4 @@ ChangePassword.getInitialProps = ({ query }) => {
   };
 };
 
-export default withUrqlClient(createUrqlClient)(ChangePassword as any);
+export default withUrqlClient(createUrqlClient)(ChangePassword);

@@ -1,4 +1,4 @@
-import { Box, Button } from "@chakra-ui/react";
+import { Box, Button, Flex, Link } from "@chakra-ui/react";
 import { Formik, Form } from "formik";
 import React from "react";
 import { InputField } from "../components/inputField";
@@ -9,7 +9,7 @@ import { toErrorMap } from "../utils/to-error-map";
 import { useRouter } from "next/router";
 import { createUrqlClient } from "../utils/create-urql-cleint";
 import { withUrqlClient } from "next-urql";
-
+import NextLink from "next/link";
 interface registerProps {}
 
 export const Login: React.FC<registerProps> = ({}) => {
@@ -21,7 +21,7 @@ export const Login: React.FC<registerProps> = ({}) => {
       <Formik
         initialValues={{ usernameOrEmail: "", password: "" }}
         onSubmit={async (values, { setErrors }) => {
-          const response = await login(values );
+          const response = await login(values);
           if (response.data?.login.errors) {
             setErrors(toErrorMap(response.data.login.errors));
           } else if (response.data?.login.user) {
@@ -44,6 +44,13 @@ export const Login: React.FC<registerProps> = ({}) => {
                 type="password"
               />
             </Box>
+
+            <Flex mt={2}>
+              <NextLink href="/forgot-password">
+                <Link ml="auto"> forgot password?</Link>
+              </NextLink>
+            </Flex>
+
             <Button
               mt={4}
               type="submit"
@@ -59,4 +66,4 @@ export const Login: React.FC<registerProps> = ({}) => {
   );
 };
 
-export default withUrqlClient(createUrqlClient, {ssr: true})(Login) ;
+export default withUrqlClient(createUrqlClient, { ssr: true })(Login);

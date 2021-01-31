@@ -45,7 +45,8 @@ export class UserResolver {
             }
         }
 
-        const userId = await redis.get(FORGOT_PASSWORD_PREFIX + token);
+        const key = FORGOT_PASSWORD_PREFIX + token;
+        const userId = await redis.get(key);
 
         if (!userId) {
             return {
@@ -68,6 +69,9 @@ export class UserResolver {
         }
 
         user.password = await agron2.hash(newPassword);
+        await em.persistAndFlush(user);
+
+        await redis.del(key);
 
         req.session.userId = user.id;
         return { user };
