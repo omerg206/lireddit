@@ -1,7 +1,7 @@
 import { Box, Button, Flex, Link } from "@chakra-ui/react";
 import { Formik, Form } from "formik";
 import { NextPage } from "next";
-import { useRouter } from "next/router";
+import { NextRouter, useRouter } from "next/router";
 import React, { useState } from "react";
 import InputField from "../../components/inputField";
 import { useChangePasswordMutation } from "../../generated/graphql";
@@ -16,7 +16,7 @@ interface TokenProps {}
 export const ChangePassword: NextPage<{ token: string }> = ({ token }) => {
   const [, changePassword] = useChangePasswordMutation();
   const [tokenError, setTokenError] = useState("");
-
+  const router: NextRouter = useRouter();
   return (
     <Wrapper>
       <Formik
@@ -35,9 +35,8 @@ export const ChangePassword: NextPage<{ token: string }> = ({ token }) => {
               setErrors(errorMap);
             }
           } else if (response.data?.changePassword.user) {
-            // setTokenError("");
-            // const router = useRouter();
-            // router.push("/");
+             setTokenError("");
+             router.push("/");
           }
         }}
       >
