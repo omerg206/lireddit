@@ -1,8 +1,16 @@
+import { isAuth } from './../middleware/is-auth';
+import { MyContext } from './../types';
 import { Post } from '../entities/post';
-import { MyContext } from '../types';
 import { query } from "express";
-import { Arg, Ctx, Int, Mutation, Query, Resolver } from "type-graphql";
+import { Arg, Ctx, Field, Int, Mutation, Query, Resolver, InputType, UseMiddleware } from "type-graphql";
 
+@InputType()
+class PostInput {
+    @Field()
+    title: string;
+    @Field()
+    text: string;
+}
 
 @Resolver()
 export class PostResolver {
@@ -19,10 +27,12 @@ export class PostResolver {
 
 
     @Mutation(() => Post)
+    @UseMiddleware(isAuth)
     async createPost(
-        @Arg('title') title: string
+        @Arg('input') input: PostInput,
+        @Ctx() { req }: MyContext
     ): Promise<Promise<Post>> {
-        return Post.create({title}).save()  ;
+        return Post.create({ ...input, creatorId: req.session.userId }).save();
     }
 
     @Mutation(() => Post, { nullable: true })
@@ -30,14 +40,14 @@ export class PostResolver {
         @Arg('id') id: number,
         @Arg('title', () => String, { nullable: true }) title: string
     ): Promise<Post | null> {
-        const post = await Post.findOne({where: { id }});
+        const post = await Post.findOne({ where: { id } });
         if (!post) {
             return null;
         }
 
         if (typeof title !== "undefined") {
             post.title = title;
-            await Post.update({id}, {title});
+            await Post.update({ id }, { title });
         }
 
         return post;
@@ -47,7 +57,7 @@ export class PostResolver {
     async deletePost(
         @Arg('id') id: number
     ): Promise<boolean> {
-        await Post.delete( id );
+        await Post.delete(id);
         return true;
     }
 }
