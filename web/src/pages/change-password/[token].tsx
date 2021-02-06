@@ -13,7 +13,7 @@ import NextLink from "next/link";
 
 interface TokenProps {}
 
-export const ChangePassword: NextPage<{ token: string }> = ({ token }) => {
+export const ChangePassword: NextPage = () => {
   const [, changePassword] = useChangePasswordMutation();
   const [tokenError, setTokenError] = useState("");
   const router: NextRouter = useRouter();
@@ -23,7 +23,7 @@ export const ChangePassword: NextPage<{ token: string }> = ({ token }) => {
         initialValues={{ newPassword: "" }}
         onSubmit={async (values, { setErrors }) => {
           const response = await changePassword({
-            token,
+            token: typeof router.query.token === 'string' ? router.query.token : '',
             newPassword: values.newPassword,
           });
 
@@ -73,10 +73,6 @@ export const ChangePassword: NextPage<{ token: string }> = ({ token }) => {
   );
 };
 
-ChangePassword.getInitialProps = ({ query }) => {
-  return {
-    token: query.token as string,
-  };
-};
+
 
 export default withUrqlClient(createUrqlClient)(ChangePassword);
