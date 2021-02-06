@@ -2,7 +2,7 @@ import { Box, Button, Flex, Link } from "@chakra-ui/react";
 import { Formik, Form } from "formik";
 import React from "react";
 import { InputField } from "../components/inputField";
-import { Wrapper } from "../wrapper";
+import { Wrapper } from "../components/wrapper";
 import { useMutation } from "urql";
 import { useLoginMutation } from "../generated/graphql";
 import { toErrorMap } from "../utils/to-error-map";

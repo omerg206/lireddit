@@ -7,7 +7,7 @@ import InputField from "../components/inputField";
 import { useForgotPasswordMutation } from "../generated/graphql";
 import { createUrqlClient } from "../utils/create-urql-cleint";
 import { toErrorMap } from "../utils/to-error-map";
-import { Wrapper } from "../wrapper";
+import { Wrapper } from "../components/wrapper";
 import login from "./login";
 
 interface ForgotPassword {}
