@@ -1,7 +1,7 @@
 import { validateRegister } from './../uitls/validate-register';
 import { COOKIE_NAME, FORGOT_PASSWORD_PREFIX } from './../constants';
 import { MyContext } from '../types';
-import { Arg, Ctx, Field, Mutation, ObjectType, Query, Resolver } from "type-graphql";
+import { Arg, Ctx, Field, FieldResolver, Mutation, ObjectType, Query, Resolver, Root } from "type-graphql";
 import agron2, { argon2d } from 'argon2';
 import { User } from '../entities/user';
 import e from 'express';
@@ -28,8 +28,14 @@ class FieldError {
 
 }
 
-@Resolver()
+@Resolver(User)
 export class UserResolver {
+    @FieldResolver(() => String)
+    email(@Root() user: User, @Ctx() { req }: MyContext) {
+        return req.session.userId === user.id ? user.email : '';
+    }
+
+
     @Mutation(() => UserResponse)
     async changePassword(
         @Arg("token") token: string,
