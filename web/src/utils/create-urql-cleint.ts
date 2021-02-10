@@ -1,11 +1,14 @@
+
 import { stringifyVariables } from '@urql/core';
-import { Query } from './../generated/graphql';
+import { Query, VoteMutationVariables } from './../generated/graphql';
 import { cacheExchange, FieldInfo, Resolver } from "@urql/exchange-graphcache";
 import { dedupExchange, Exchange, fetchExchange } from "urql";
 import { LoginMutation, MeDocument, MeQuery, RegisterMutation } from "../generated/graphql";
 import { betterUpdateQuery } from './betterUpdateQuery';
 import { tap, pipe } from 'wonka';
 import Router from 'next/router'
+import gql from 'graphql-tag';
+
 
 const errorExchange: Exchange = ({ forward }) => ops$ => {
   return pipe(
@@ -139,6 +142,31 @@ export const createUrqlClient = (ssrExchange: any) => ({
       },
       updates: {
         Mutation: {
+          vote: (_result, arg, cache, info) => {
+            const { postId, value } = arg as VoteMutationVariables;
+            const data = cache.readFragment(
+              gql`
+                fragment _ on Post {
+                  id
+                  points
+                }
+              `,
+              { id: postId }
+            );
+           
+
+            if (data) {
+              const newPoints = ((data as any).points as number) + value;
+              cache.writeFragment(
+                gql`
+                  fragment __ on Post {
+                    points
+                  }
+                `,
+                { id: postId, points: newPoints }
+              );
+            }
+          },
           createPost: (_result, arg, cache, info) => {
             const allFields = cache.inspectFields('Query');
             const fieldInfos = allFields.filter(info => info.fieldName === 'posts');
