@@ -14,7 +14,6 @@ import {
   Stack,
   Text,
 } from "@chakra-ui/react";
-import { ChevronDownIcon, ChevronUpIcon } from "@chakra-ui/icons";
 import { UpdootSection } from "../components/updoot-section";
 
 const Index = () => {

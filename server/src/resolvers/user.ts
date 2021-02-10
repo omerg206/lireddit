@@ -88,7 +88,7 @@ export class UserResolver {
 
     @Query(() => User, { nullable: true })
     me(@Ctx() { req }: MyContext) {
-        if (req.session.userId) {
+        if (!req.session.userId) {
             return null;
         }
 
@@ -182,7 +182,7 @@ export class UserResolver {
             }
         }
 
-        req.session.userId = user.id
+        req.session.userId = user.id;
         return {
             user
         }

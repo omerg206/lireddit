@@ -2,7 +2,7 @@ import { Box, Button } from "@chakra-ui/react";
 import { Formik, Form } from "formik";
 import React from "react";
 import InputField from "../components/inputField";
-import { useCreatePostMutation, useMeQuery } from "../generated/graphql";
+import { useCreatePostMutation } from "../generated/graphql";
 import { useRouter } from "next/router";
 import { withUrqlClient } from "next-urql";
 import { createUrqlClient } from "../utils/create-urql-cleint";
