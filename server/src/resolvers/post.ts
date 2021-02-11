@@ -127,7 +127,7 @@ export class PostResolver {
         // }
 
         // const posts = await qb.getMany();
-        console.log(posts[0]);
+        // console.log(posts[0]);
 
         return {
             posts: posts.slice(0, realLimit),
@@ -152,21 +152,24 @@ export class PostResolver {
     }
 
     @Mutation(() => Post, { nullable: true })
+    @UseMiddleware(isAuth)
     async updatePost(
-        @Arg('id') id: number,
-        @Arg('title', () => String, { nullable: true }) title: string
+        @Arg('id', () => Int) id: number,
+        @Arg('title') title: string,
+        @Arg('text') text: string,
+        @Ctx() { req }: MyContext
     ): Promise<Post | null> {
-        const post = await Post.findOne({ where: { id } });
-        if (!post) {
-            return null;
-        }
+        const result = await getConnection()
+            .createQueryBuilder()
+            .update(Post)
+            .set({ title, text })
+            .where('id = :id and "creatorId" = :creatorId', { id, creatorId: req.session.userId })
+            .returning("*")
+            .execute();
 
-        if (typeof title !== "undefined") {
-            post.title = title;
-            await Post.update({ id }, { title });
-        }
 
-        return post;
+        return result.raw[0];
+
     }
 
     @Mutation(() => Boolean)
@@ -188,7 +191,7 @@ export class PostResolver {
         // await Post.delete({ id});
 
         //cascade in updoot entity
-         await Post.delete({ id, creatorId: req.session.userId});
+        await Post.delete({ id, creatorId: req.session.userId });
         return true;
     }
 }

@@ -1,25 +1,24 @@
-import { withUrqlClient } from "next-urql";
-import { createUrqlClient } from "../utils/create-urql-cleint";
-import {
-  useDeletePostMutation,
-  useMeQuery,
-  usePostsQuery,
-} from "../generated/graphql";
-import React, { useState } from "react";
-import { Layout } from "../components/layout";
-import NextLink from "next/link";
 import {
   Box,
   Button,
   Flex,
   Heading,
-  IconButton,
   Link,
   Stack,
-  Text,
+  Text
 } from "@chakra-ui/react";
-import { DeleteIcon } from "@chakra-ui/icons";
+import { withUrqlClient } from "next-urql";
+import NextLink from "next/link";
+import React, { useState } from "react";
+import { EditDeletePostButtons } from "../components/edit-delete-post-buttons";
+import { Layout } from "../components/layout";
 import { UpdootSection } from "../components/updoot-section";
+import {
+  useDeletePostMutation,
+  useMeQuery,
+  usePostsQuery
+} from "../generated/graphql";
+import { createUrqlClient } from "../utils/create-urql-cleint";
 
 const Index = () => {
   const [variables, setVariables] = useState({
@@ -27,7 +26,7 @@ const Index = () => {
     cursor: null as null | string,
   });
   const [{ data, fetching }] = usePostsQuery({ variables });
-  const [{ data: loggedUser }] = useMeQuery();
+  const [{ data: meData }] = useMeQuery();
   const [, deletePost] = useDeletePostMutation();
 
   if (!fetching && !data) {
@@ -55,15 +54,9 @@ const Index = () => {
                     <Text mt={4} flex={1}>
                       {p.textSnippet}
                     </Text>
-                    <IconButton
-                      icon={<DeleteIcon />}
-                      aria-label="delete icon"
-                      isDisabled={loggedUser?.me?.id !== p.creator.id}
-                      colorScheme="red"
-                      onClick={() => {
-                        deletePost({ id: p.id });
-                      }}
-                    ></IconButton>
+                    <Box ml="auto">
+                        <EditDeletePostButtons id={p.id} creatorId={p.creator.id}/>
+                      </Box>
                   </Flex>
                 </Box>
               </Flex>
