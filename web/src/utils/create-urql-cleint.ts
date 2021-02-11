@@ -1,8 +1,7 @@
 import { isServer } from './is-server';
-
 import { stringifyVariables } from '@urql/core';
-import { DeletePostMutationVariables, Query, VoteMutationVariables } from './../generated/graphql';
-import { cacheExchange, FieldInfo, Resolver } from "@urql/exchange-graphcache";
+import { DeletePostMutationVariables, VoteMutationVariables } from './../generated/graphql';
+import { cacheExchange, FieldInfo, Resolver, Cache } from "@urql/exchange-graphcache";
 import { dedupExchange, Exchange, fetchExchange } from "urql";
 import { LoginMutation, MeDocument, MeQuery, RegisterMutation } from "../generated/graphql";
 import { betterUpdateQuery } from './betterUpdateQuery';
@@ -22,16 +21,6 @@ const errorExchange: Exchange = ({ forward }) => ops$ => {
     })
   )
 };
-
-
-
-// export type MergeMode = 'before' | 'after';
-
-// export interface PaginationParams {
-//   cursorArgument?: string;
-//   limitArgument?: string;
-//   mergeMode?: MergeMode;
-// }
 
 export const cursorPagination = (): Resolver => {
 
@@ -68,62 +57,16 @@ export const cursorPagination = (): Resolver => {
       hasMore, posts: results
     };
 
-
-    //   const visited = new Set();
-    //   let result: NullArray<string> = [];
-    //   let prevOffset: number | null = null;
-
-    //   for (let i = 0; i < size; i++) {
-    //     const { fieldKey, arguments: args } = fieldInfos[i];
-    //     if (args === null || !compareArgs(fieldArgs, args)) {
-    //       continue;
-    //     }
-
-    //     const links = cache.resolve(entityKey, fieldKey) as string[];
-    //     const currentOffset = args[cursorArgument];
-
-    //     if (
-    //       links === null ||
-    //       links.length === 0 ||
-    //       typeof currentOffset !== 'number'
-    //     ) {
-    //       continue;
-    //     }
-
-    //     const tempResult: NullArray<string> = [];
-
-    //     for (let j = 0; j < links.length; j++) {
-    //       const link = links[j];
-    //       if (visited.has(link)) continue;
-    //       tempResult.push(link);
-    //       visited.add(link);
-    //     }
-
-    //     if (
-    //       (!prevOffset || currentOffset > prevOffset) ===
-    //       (mergeMode === 'after')
-    //     ) {
-    //       result = [...result, ...tempResult];
-    //     } else {
-    //       result = [...tempResult, ...result];
-    //     }
-
-    //     prevOffset = currentOffset;
-    //   }
-
-    //   const hasCurrentPage = cache.resolve(entityKey, fieldName, fieldArgs);
-    //   if (hasCurrentPage) {
-    //     return result;
-    //   } else if (!(info as any).store.schema) {
-    //     return undefined;
-    //   } else {
-    //     info.partial = true;
-    //     return result;
-    //   }
   };
 };
 
-
+const invalidateAllPosts = (cache: Cache) => {
+  const allFields = cache.inspectFields('Query');
+  const fieldInfos = allFields.filter(info => info.fieldName === 'posts');
+  fieldInfos.forEach((fi) => {
+    cache.invalidate('Query', 'posts', fi.arguments || {})
+  })
+}
 
 export const createUrqlClient = (ssrExchange: any, ctx: any) => {
   let cookie = ''
@@ -189,12 +132,7 @@ export const createUrqlClient = (ssrExchange: any, ctx: any) => {
               }
             },
             createPost: (_result, arg, cache, info) => {
-              const allFields = cache.inspectFields('Query');
-              const fieldInfos = allFields.filter(info => info.fieldName === 'posts');
-              fieldInfos.forEach((fi) => {
-                cache.invalidate('Query', 'posts', fi.arguments || {})
-              })
-
+              invalidateAllPosts(cache);
             },
             logout: (_result, arg, cache, info) => {
               betterUpdateQuery<LoginMutation, MeQuery>(
@@ -219,6 +157,7 @@ export const createUrqlClient = (ssrExchange: any, ctx: any) => {
                   }
                 }
               );
+              invalidateAllPosts(cache);
             },
             register: (_result, arg, cache, info) => {
               betterUpdateQuery<RegisterMutation, MeQuery>(

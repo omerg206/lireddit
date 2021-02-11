@@ -16,6 +16,8 @@ import { User } from './entities/user';
 import { Post } from './entities/post';
 import path from 'path';
 import { Updoot } from './entities/updoot';
+import { createUserLoader } from './uitls/create-user-loader';
+import { createUpdootLoader } from './uitls/create-updoot-loader';
 
 
 
@@ -68,7 +70,8 @@ const main = async () => {
             resolvers: [HelloResolver, PostResolver, UserResolver],
             validate: false
         }),
-        context: ({ req, res }: MyContext) => ({ req, res, redis: redisClient })
+        context: ({ req, res }: MyContext) => ({ req, res, redis: redisClient,
+             userLoader: createUserLoader(), updootLoader: createUpdootLoader() })
     });
 
     apolloServer.applyMiddleware({ app, cors: false })

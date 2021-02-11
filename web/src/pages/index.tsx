@@ -5,7 +5,7 @@ import {
   Heading,
   Link,
   Stack,
-  Text
+  Text,
 } from "@chakra-ui/react";
 import { withUrqlClient } from "next-urql";
 import NextLink from "next/link";
@@ -16,7 +16,7 @@ import { UpdootSection } from "../components/updoot-section";
 import {
   useDeletePostMutation,
   useMeQuery,
-  usePostsQuery
+  usePostsQuery,
 } from "../generated/graphql";
 import { createUrqlClient } from "../utils/create-urql-cleint";
 
@@ -25,12 +25,17 @@ const Index = () => {
     limit: 15,
     cursor: null as null | string,
   });
-  const [{ data, fetching }] = usePostsQuery({ variables });
+  const [{ data, error, fetching }] = usePostsQuery({ variables });
   const [{ data: meData }] = useMeQuery();
   const [, deletePost] = useDeletePostMutation();
 
   if (!fetching && !data) {
-    return <div>you got query failed for some reason</div>;
+    return (
+      <div>
+        <div>you got query failed for some reason</div>
+        <div>{error?.message} </div>
+      </div>
+    );
   }
 
   return (
@@ -55,8 +60,11 @@ const Index = () => {
                       {p.textSnippet}
                     </Text>
                     <Box ml="auto">
-                        <EditDeletePostButtons id={p.id} creatorId={p.creator.id}/>
-                      </Box>
+                      <EditDeletePostButtons
+                        id={p.id}
+                        creatorId={p.creator.id}
+                      />
+                    </Box>
                   </Flex>
                 </Box>
               </Flex>

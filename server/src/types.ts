@@ -1,6 +1,8 @@
-import { EntityManager, IDatabaseDriver, Connection } from "@mikro-orm/core";
+
 import {Request, Response, Express} from 'express';
 import {Redis} from 'ioredis';
+import { createUpdootLoader } from './uitls/create-updoot-loader';
+import { createUserLoader } from './uitls/create-user-loader';
 
 declare module "express-session" {
     interface Session {
@@ -13,5 +15,7 @@ declare module "express-session" {
 export type MyContext {
 req:  Request;
 res: Response;
-redis: Redis
+redis: Redis;
+userLoader: ReturnType<typeof createUserLoader>,
+updootLoader:  ReturnType<typeof createUpdootLoader> 
 }
