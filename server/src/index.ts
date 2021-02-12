@@ -1,4 +1,5 @@
 import 'reflect-metadata';
+require('dotenv-safe').config();
 import { ApolloServer } from 'apollo-server-express';
 import { buildSchema } from 'type-graphql';
 import { UserResolver } from './resolvers/user';
@@ -24,9 +25,7 @@ import { createUpdootLoader } from './uitls/create-updoot-loader';
 const main = async () => {
     const connection = await createConnection({
         type: 'postgres',
-        database: 'lireddit2',
-        username: 'postgres',
-        password: 'Ee123456',
+        url: process.env.DATABASE_URL,
         logging: true,
         synchronize: true,
         entities: [Post, User, Updoot],
@@ -40,26 +39,28 @@ const main = async () => {
 
     let RedisStore = connectRedis(session,)
     let redisClient = new Redis({
+
         // host: '172.19.43.120',
     })
 
     app.use(cors({
         credentials: true,
-        origin: 'http://localhost:3000'
+        origin: process.env.CORS_ORIGIN
     }));
 
     app.use(
         session({
             name: COOKIE_NAME,
             store: new RedisStore({ client: redisClient, disableTouch: true }),
-            secret: '213asds23s',
+            secret: process.env.SESSTION_SECRET as any,
             resave: false,
             saveUninitialized: false,
             cookie: {
                 maxAge: 1000 * 60 * 60 * 24 * 365 * 10,  //10 years,
                 httpOnly: true,
                 secure: __prod__,
-                sameSite: 'lax' //csrf
+                sameSite: 'lax', //csrf
+                domain: __prod__ ? ".codeponder.com" : undefined
             }
         })
     )
@@ -70,8 +71,10 @@ const main = async () => {
             resolvers: [HelloResolver, PostResolver, UserResolver],
             validate: false
         }),
-        context: ({ req, res }: MyContext) => ({ req, res, redis: redisClient,
-             userLoader: createUserLoader(), updootLoader: createUpdootLoader() })
+        context: ({ req, res }: MyContext) => ({
+            req, res, redis: redisClient,
+            userLoader: createUserLoader(), updootLoader: createUpdootLoader()
+        })
     });
 
     apolloServer.applyMiddleware({ app, cors: false })
@@ -84,8 +87,8 @@ const main = async () => {
     });
 
 
-    app.listen(4000, () => {
-        console.log(' server running started on localhost: 4000')
+    app.listen(parseInt(process.env.PORT as string), () => {
+        console.log(' server running started on localhost: ', process.env.PORT)
     });
 
 };

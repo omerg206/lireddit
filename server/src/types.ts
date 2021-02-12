@@ -12,7 +12,7 @@ declare module "express-session" {
   
 
 
-export type MyContext {
+export type MyContext ={
 req:  Request;
 res: Response;
 redis: Redis;
