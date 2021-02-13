@@ -13,7 +13,7 @@ import login from "./login";
 interface ForgotPassword {}
 
 export const ForgotPassword: React.FC<{}> = ({}) => {
-  const [, forgotPassword] = useForgotPasswordMutation();
+  const [forgotPassword] = useForgotPasswordMutation();
   const [complete, setComplete] = useState(false);
 
   return (
@@ -21,7 +21,7 @@ export const ForgotPassword: React.FC<{}> = ({}) => {
       <Formik
         initialValues={{ email: "" }}
         onSubmit={async (values) => {
-          await forgotPassword(values);
+          await forgotPassword({variables: values});
           setComplete(true);
         }}
       >

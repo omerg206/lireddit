@@ -11,7 +11,7 @@ export const UpdootSection: React.FC<UpdootSectionProps> = ({ post }) => {
   const [loadingState, setLoadingState] = useState<
     "uppdoot-loading" | "downpdoot-loading" | "not-loading"
   >("not-loading");
-  const [, vote] = useVoteMutation();
+  const [vote] = useVoteMutation();
   return (
     <Flex direction="column" justifyContent="center" alignItems="center" mr={4}>
       <IconButton
@@ -26,8 +26,10 @@ export const UpdootSection: React.FC<UpdootSectionProps> = ({ post }) => {
 
           setLoadingState("uppdoot-loading");
           await vote({
-            postId: post.id,
-            value: 1,
+            variables: {
+              postId: post.id,
+              value: 1,
+            },
           });
           setLoadingState("not-loading");
         }}
@@ -44,8 +46,10 @@ export const UpdootSection: React.FC<UpdootSectionProps> = ({ post }) => {
           }
           setLoadingState("downpdoot-loading");
           await vote({
-            postId: post.id,
-            value: -1,
+            variables: {
+              postId: post.id,
+              value: -1,
+            },
           });
           setLoadingState("not-loading");
         }}

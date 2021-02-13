@@ -14,16 +14,16 @@ import { useGetIntId } from "../../../utils/use-get-int-id";
 
 const EditPost: React.FC<{}> = ({}) => {
   const intId = useGetIntId();
-  const [{ data, fetching }] = usePostQuery({
-    pause: intId === -1,
+  const { data, loading } = usePostQuery({
+    skip: intId === -1,
     variables: {
       id: intId,
     },
   });
-  const [, updatePost] = useUpdatePostMutation();
+  const [updatePost] = useUpdatePostMutation();
   const router = useRouter();
 
-  if (fetching) {
+  if (loading) {
     return (
       <Layout>
         <div>loading...</div>
@@ -44,7 +44,7 @@ const EditPost: React.FC<{}> = ({}) => {
       <Formik
         initialValues={{ title: data.post.title, text: data.post.text }}
         onSubmit={async (values) => {
-          await updatePost({id: intId, ...values});
+          await updatePost({variables: {id: intId, ...values}});
           router.back()
         }}
       >

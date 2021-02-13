@@ -7,9 +7,9 @@ import { createUrqlClient } from "../../utils/create-urql-cleint";
 import { useGetPostFromUrl } from "../../utils/use-get-post-from-url";
 
 const Post: React.FC<{}> = ({}) => {
-  const [{ data, fetching, error }] = useGetPostFromUrl();
+  const { data, loading, error } = useGetPostFromUrl();
 
-  if (fetching) {
+  if (loading) {
     return (
       <Layout>
         <div>loading...</div>

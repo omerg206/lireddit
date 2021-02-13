@@ -21,15 +21,17 @@ import {
 import { createUrqlClient } from "../utils/create-urql-cleint";
 
 const Index = () => {
-  const [variables, setVariables] = useState({
-    limit: 15,
-    cursor: null as null | string,
+  const { data, error, loading, variables, fetchMore } = usePostsQuery({
+    variables: {
+      limit: 15,
+      cursor: null,
+    },
+    notifyOnNetworkStatusChange: true
   });
-  const [{ data, error, fetching }] = usePostsQuery({ variables });
-  const [{ data: meData }] = useMeQuery();
-  const [, deletePost] = useDeletePostMutation();
+  const { data: meData } = useMeQuery();
+  const [deletePost] = useDeletePostMutation();
 
-  if (!fetching && !data) {
+  if (!loading && !data) {
     return (
       <div>
         <div>you got query failed for some reason</div>
@@ -40,7 +42,7 @@ const Index = () => {
 
   return (
     <Layout>
-      {!data && fetching ? (
+      {!data && loading ? (
         <div>loading ...</div>
       ) : (
         <Stack spacing={8}>
@@ -75,11 +77,14 @@ const Index = () => {
       {data && data.posts.hasMore ? (
         <Flex my={8} m="auto" justifyContent="center">
           <Button
-            isLoading={fetching}
+            isLoading={loading}
             onClick={() => {
-              setVariables({
-                limit: variables.limit,
-                cursor: data.posts.posts[data.posts.posts.length - 1].createdAt,
+              fetchMore({
+                variables: {
+                  limit: variables?.limit,
+                  cursor:
+                    data.posts.posts[data.posts.posts.length - 1].createdAt,
+                },
               });
             }}
           >
