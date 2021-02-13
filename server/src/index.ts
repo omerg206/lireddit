@@ -27,7 +27,7 @@ const main = async () => {
         type: 'postgres',
         url: process.env.DATABASE_URL,
         logging: true,
-        synchronize: true,
+        // synchronize: true,
         entities: [Post, User, Updoot],
         migrations: [path.join(__dirname, "./migrations/*")]
     })
@@ -43,6 +43,7 @@ const main = async () => {
         // host: '172.19.43.120',
     })
 
+    app.set("trust proxy", 1)
     app.use(cors({
         credentials: true,
         origin: process.env.CORS_ORIGIN
