@@ -11,7 +11,7 @@ interface NavbarProps {}
 export const Navbar: React.FC<NavbarProps> = ({}) => {
   const router = useRouter();
   const { data, loading } = useMeQuery({ skip: isServer() });
-  const [logout, { loading: logoutloading }] = useLogoutMutation();
+  const [logout, { loading: logoutLoading }] = useLogoutMutation();
   const apolloClient = useApolloClient();
   let body = null;
 
@@ -44,10 +44,10 @@ export const Navbar: React.FC<NavbarProps> = ({}) => {
             await logout();
             await apolloClient.resetStore();
           }}
-          isLoading={logoutloading}
+          isLoading={logoutLoading}
         >
-          {" "}
-          logout{" "}
+       
+          logout
         </Button>
       </Flex>
     );

@@ -3,17 +3,15 @@ import { Formik, Form } from "formik";
 import React from "react";
 import { InputField } from "../components/inputField";
 import { Wrapper } from "../components/wrapper";
-import { useMutation } from "urql";
-import { useLoginMutation } from "../generated/graphql";
+import { MeDocument, MeQuery, useLoginMutation } from "../generated/graphql";
 import { toErrorMap } from "../utils/to-error-map";
 import { useRouter } from "next/router";
-import { createUrqlClient } from "../utils/create-urql-cleint";
-import { withUrqlClient } from "next-urql";
 import NextLink from "next/link";
+import { withApollo } from "../utils/with-apollo";
 interface registerProps {}
 
 export const Login: React.FC<registerProps> = ({}) => {
-  const [ login] = useLoginMutation();
+  const [login] = useLoginMutation();
   const router = useRouter();
 
   return (
@@ -21,7 +19,19 @@ export const Login: React.FC<registerProps> = ({}) => {
       <Formik
         initialValues={{ usernameOrEmail: "", password: "" }}
         onSubmit={async (values, { setErrors }) => {
-          const response = await login({variables: values});
+          const response = await login({
+            variables: values,
+            update: (cache, { data }) => {
+              cache.writeQuery<MeQuery>({
+                query: MeDocument,
+                data: {
+                  __typename: "Query",
+                  me: data?.login.user,
+                },
+              });
+              cache.evict({fieldName: 'post:{}'})
+            },
+          });
           if (response.data?.login.errors) {
             setErrors(toErrorMap(response.data.login.errors));
           } else if (response.data?.login.user) {
@@ -68,4 +78,4 @@ export const Login: React.FC<registerProps> = ({}) => {
   );
 };
 
-export default withUrqlClient(createUrqlClient, { ssr: true })(Login);
+export default withApollo({ ssr: false })(Login);
